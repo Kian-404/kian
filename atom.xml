@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://kian-404.github.io/kian</id>
     <title>Useless Blog</title>
-    <updated>2020-11-10T05:56:20.486Z</updated>
+    <updated>2020-11-10T06:41:46.704Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://kian-404.github.io/kian"/>
     <link rel="self" href="https://kian-404.github.io/kian/atom.xml"/>
@@ -10,6 +10,148 @@
     <logo>https://kian-404.github.io/kian/images/avatar.png</logo>
     <icon>https://kian-404.github.io/kian/favicon.ico</icon>
     <rights>All rights reserved 2020, Useless Blog</rights>
+    <entry>
+        <title type="html"><![CDATA[vue-typescript-admin-template源码分析---Layout篇]]></title>
+        <id>https://kian-404.github.io/kian/post/vue-typescript-admin-template-yuan-ma-fen-xi-layout-pian/</id>
+        <link href="https://kian-404.github.io/kian/post/vue-typescript-admin-template-yuan-ma-fen-xi-layout-pian/">
+        </link>
+        <updated>2020-11-10T06:01:11.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="maints">main.ts</h3>
+<p>首先我们来看一下入口文件<code>main.ts</code>,在入口文件中，首先引入了<code>normalize.css</code>进行重置<code>css</code>，然后导入<code>elementUI</code>和<code>vue-svgicon</code>,然后导入自定义的<code>ElementUI</code>样式，同时引入状态管理<code>store</code>和路由文件<code>router</code>,以及国际化、<code>PWA</code>组件和自定义的指令。然后进行全局注册:</p>
+<pre><code class="language-js">// Register global directives
+Object.keys(directives).forEach(key =&gt; {
+  Vue.directive(key, (directives as { [key: string ]: DirectiveOptions })[key])
+})
+
+// Register global filter functions
+Object.keys(filters).forEach(key =&gt; {
+  Vue.filter(key, (filters as { [key: string ]: Function })[key])
+})
+</code></pre>
+<details>
+  <summary>main.ts</summary>
+<pre><code class="language-js">import Vue, { DirectiveOptions } from 'vue'
+import 'normalize.css'
+import ElementUI from 'element-ui'
+import SvgIcon from 'vue-svgicon'
+
+import '@/styles/element-variables.scss'
+import '@/styles/index.scss'
+
+import App from '@/App.vue'
+import store from '@/store'
+import { AppModule } from '@/store/modules/app'
+import router from '@/router'
+import i18n from '@/lang'
+import '@/icons/components'
+import '@/permission'
+import '@/utils/error-log'
+import '@/pwa/register-service-worker'
+import * as directives from '@/directives'
+import * as filters from '@/filters'
+
+Vue.use(ElementUI, {
+size: AppModule.size, // Set element-ui default size
+i18n: (key: string, value: string) =&gt; i18n.t(key, value)
+})
+
+Vue.use(SvgIcon, {
+tagName: 'svg-icon',
+defaultWidth: '1em',
+defaultHeight: '1em'
+})
+
+// Register global directives
+Object.keys(directives).forEach(key =&gt; {
+Vue.directive(key, (directives as { [key: string ]: DirectiveOptions })[key])
+})
+
+// Register global filter functions
+Object.keys(filters).forEach(key =&gt; {
+Vue.filter(key, (filters as { [key: string ]: Function })[key])
+})
+
+Vue.config.productionTip = false
+
+new Vue({
+router,
+store,
+i18n,
+render: (h) =&gt; h(App)
+}).$mount('#app')
+</code></pre>
+</details>
+<hr>
+<h3 id="appvue">APP.vue</h3>
+<p>然后来看一下<code>app.vue</code>中的内容，里面只有一个简单的<code>&lt;router-view&gt;</code>和一个<code>PWA</code>插件</p>
+<details>
+<summary>app.vue</summary>
+<pre><code class="language-ts">&lt;template&gt;
+  &lt;div id=&quot;app&quot;&gt;
+    &lt;router-view /&gt;
+    &lt;service-worker-update-popup /&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script lang=&quot;ts&quot;&gt;
+import { Component, Vue } from 'vue-property-decorator'
+import ServiceWorkerUpdatePopup from '@/pwa/components/ServiceWorkerUpdatePopup.vue'
+
+@Component({
+  name: 'App',
+  components: {
+    ServiceWorkerUpdatePopup
+  }
+})
+export default class extends Vue {}
+&lt;/script&gt;
+</code></pre>
+</details>
+<hr>
+<h2 id="router">router</h2>
+<p>从上边可以知道<code>App.vue</code>中是显示了一个路由视图，然后在<code>router index.ts</code>文件中可以看到该部分主要是以<code>Layout</code>为模板，然后重定向到<code>dashboard</code>路径下</p>
+<pre><code class="language-js">  {
+    path: '/',
+    component: Layout,
+    redirect: '/dashboard',
+    children: [
+      {
+        path: 'dashboard',
+        component: () =&gt; import(/* webpackChunkName: &quot;dashboard&quot; */ '@/views/dashboard/index.vue'),
+        name: 'Dashboard',
+        meta: {
+          title: 'dashboard',
+          icon: 'dashboard',
+          affix: true
+        }
+      }
+    ]
+  },
+</code></pre>
+<p>我们先来看一下<code>layout</code>文件夹下包含那些内容，从下边文件目录中可以看出，<code>layout</code>分成了侧边的<code>Sidebar</code>，上部分的<code>Navbar</code>，内容区域的<code>AppMain</code>,多<code>Tab</code>切换的<code>TagsView</code>以及设置系统部分的<code>Settings</code></p>
+<pre><code class="language-bash">layout
+|-- components
+|   |-- AppMain.vue
+|   |-- Navbar
+|   |   `-- index.vue
+|   |-- Settings
+|   |   `-- index.vue
+|   |-- Sidebar
+|   |   |-- SidebarItem.vue
+|   |   |-- SidebarItemLink.vue
+|   |   |-- SidebarLogo.vue
+|   |   `-- index.vue
+|   |-- TagsView
+|   |   |-- ScrollPane.vue
+|   |   `-- index.vue
+|   `-- index.ts
+|-- index.vue
+`-- mixin
+    `-- resize.ts
+
+</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[vue-typescript-admin-template源码分析---目录结构篇]]></title>
         <id>https://kian-404.github.io/kian/post/vue-typescript-admin-template-yuan-ma-fen-xi-mu-lu-jie-gou-pian/</id>

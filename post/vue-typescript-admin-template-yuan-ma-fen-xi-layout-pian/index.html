@@ -1,0 +1,325 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>vue-typescript-admin-template源码分析---Layout篇 | Useless Blog</title>
+<meta name="description" content="用心记录点没用的">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://kian-404.github.io/kian/favicon.ico?v=1604990327927">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://kian-404.github.io/kian/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://kian-404.github.io/kian">
+        <img class="avatar" src="https://kian-404.github.io/kian/images/avatar.png?v=1604990327927" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://kian-404.github.io/kian">
+        <h1 class="site-title">Useless Blog</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/kian/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/kian/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/kian/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/kian/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+            <div class="feature-container" style="background-image: url('https://kian-404.github.io/kian/post-images/vue-typescript-admin-template-yuan-ma-fen-xi-layout-pian.png')">
+            </div>
+          
+          <h2 class="post-title">vue-typescript-admin-template源码分析---Layout篇</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2020-11-10</span>
+            
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://kian-404.github.io/kian/tag/code/">
+                    code
+                    
+                  </a>
+                
+              </span>
+            
+          </div>
+          <div class="post-content">
+            <h3 id="maints">main.ts</h3>
+<p>首先我们来看一下入口文件<code>main.ts</code>,在入口文件中，首先引入了<code>normalize.css</code>进行重置<code>css</code>，然后导入<code>elementUI</code>和<code>vue-svgicon</code>,然后导入自定义的<code>ElementUI</code>样式，同时引入状态管理<code>store</code>和路由文件<code>router</code>,以及国际化、<code>PWA</code>组件和自定义的指令。然后进行全局注册:</p>
+<pre><code class="language-js">// Register global directives
+Object.keys(directives).forEach(key =&gt; {
+  Vue.directive(key, (directives as { [key: string ]: DirectiveOptions })[key])
+})
+
+// Register global filter functions
+Object.keys(filters).forEach(key =&gt; {
+  Vue.filter(key, (filters as { [key: string ]: Function })[key])
+})
+</code></pre>
+<details>
+  <summary>main.ts</summary>
+<pre><code class="language-js">import Vue, { DirectiveOptions } from 'vue'
+import 'normalize.css'
+import ElementUI from 'element-ui'
+import SvgIcon from 'vue-svgicon'
+
+import '@/styles/element-variables.scss'
+import '@/styles/index.scss'
+
+import App from '@/App.vue'
+import store from '@/store'
+import { AppModule } from '@/store/modules/app'
+import router from '@/router'
+import i18n from '@/lang'
+import '@/icons/components'
+import '@/permission'
+import '@/utils/error-log'
+import '@/pwa/register-service-worker'
+import * as directives from '@/directives'
+import * as filters from '@/filters'
+
+Vue.use(ElementUI, {
+size: AppModule.size, // Set element-ui default size
+i18n: (key: string, value: string) =&gt; i18n.t(key, value)
+})
+
+Vue.use(SvgIcon, {
+tagName: 'svg-icon',
+defaultWidth: '1em',
+defaultHeight: '1em'
+})
+
+// Register global directives
+Object.keys(directives).forEach(key =&gt; {
+Vue.directive(key, (directives as { [key: string ]: DirectiveOptions })[key])
+})
+
+// Register global filter functions
+Object.keys(filters).forEach(key =&gt; {
+Vue.filter(key, (filters as { [key: string ]: Function })[key])
+})
+
+Vue.config.productionTip = false
+
+new Vue({
+router,
+store,
+i18n,
+render: (h) =&gt; h(App)
+}).$mount('#app')
+</code></pre>
+</details>
+<hr>
+<h3 id="appvue">APP.vue</h3>
+<p>然后来看一下<code>app.vue</code>中的内容，里面只有一个简单的<code>&lt;router-view&gt;</code>和一个<code>PWA</code>插件</p>
+<details>
+<summary>app.vue</summary>
+<pre><code class="language-ts">&lt;template&gt;
+  &lt;div id=&quot;app&quot;&gt;
+    &lt;router-view /&gt;
+    &lt;service-worker-update-popup /&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script lang=&quot;ts&quot;&gt;
+import { Component, Vue } from 'vue-property-decorator'
+import ServiceWorkerUpdatePopup from '@/pwa/components/ServiceWorkerUpdatePopup.vue'
+
+@Component({
+  name: 'App',
+  components: {
+    ServiceWorkerUpdatePopup
+  }
+})
+export default class extends Vue {}
+&lt;/script&gt;
+</code></pre>
+</details>
+<hr>
+<h2 id="router">router</h2>
+<p>从上边可以知道<code>App.vue</code>中是显示了一个路由视图，然后在<code>router index.ts</code>文件中可以看到该部分主要是以<code>Layout</code>为模板，然后重定向到<code>dashboard</code>路径下</p>
+<pre><code class="language-js">  {
+    path: '/',
+    component: Layout,
+    redirect: '/dashboard',
+    children: [
+      {
+        path: 'dashboard',
+        component: () =&gt; import(/* webpackChunkName: &quot;dashboard&quot; */ '@/views/dashboard/index.vue'),
+        name: 'Dashboard',
+        meta: {
+          title: 'dashboard',
+          icon: 'dashboard',
+          affix: true
+        }
+      }
+    ]
+  },
+</code></pre>
+<p>我们先来看一下<code>layout</code>文件夹下包含那些内容，从下边文件目录中可以看出，<code>layout</code>分成了侧边的<code>Sidebar</code>，上部分的<code>Navbar</code>，内容区域的<code>AppMain</code>,多<code>Tab</code>切换的<code>TagsView</code>以及设置系统部分的<code>Settings</code></p>
+<pre><code class="language-bash">layout
+|-- components
+|   |-- AppMain.vue
+|   |-- Navbar
+|   |   `-- index.vue
+|   |-- Settings
+|   |   `-- index.vue
+|   |-- Sidebar
+|   |   |-- SidebarItem.vue
+|   |   |-- SidebarItemLink.vue
+|   |   |-- SidebarLogo.vue
+|   |   `-- index.vue
+|   |-- TagsView
+|   |   |-- ScrollPane.vue
+|   |   `-- index.vue
+|   `-- index.ts
+|-- index.vue
+`-- mixin
+    `-- resize.ts
+
+</code></pre>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://kian-404.github.io/kian/post/vue-typescript-admin-template-yuan-ma-fen-xi-mu-lu-jie-gou-pian/">
+              <h3 class="post-title">
+                下一篇：vue-typescript-admin-template源码分析---目录结构篇
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+        
+          <div id="gitalk-container"></div>
+        
+
+        
+      
+
+      <div class="site-footer">
+  <div class="slogan">用心记录点没用的</div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://kian-404.github.io/kian/atom.xml" target="_blank">RSS</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'b192d037025b858af623',
+        clientSecret: 'fb7f8647c3a24969ad25e741e815b75085e6e1c2',
+        repo: 'kian',
+        owner: 'Kian-404',
+        admin: ['Kian-404'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>
